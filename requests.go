@@ -43,9 +43,10 @@ func (c *Client) req(method, path string, body io.Reader, intercept func(*http.R
 	}
 
 	if rs.StatusCode == 401 && c.auth.Type() == "NoAuth" {
-		if strings.Index(rs.Header.Get("Www-Authenticate"), "Digest") > -1 {
+		wwwAuthenticate := strings.ToLower(rs.Header.Get("Www-Authenticate"))
+		if strings.Index(wwwAuthenticate, "digest") > -1 {
 			c.auth = &DigestAuth{c.auth.User(), c.auth.Pass(), digestParts(rs)}
-		} else if strings.Index(rs.Header.Get("Www-Authenticate"), "Basic") > -1 {
+		} else if strings.Index(wwwAuthenticate, "basic") > -1 {
 			c.auth = &BasicAuth{c.auth.User(), c.auth.Pass()}
 		} else {
 			return rs, newPathError("Authorize", c.root, rs.StatusCode)
